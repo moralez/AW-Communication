@@ -12,6 +12,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -19,7 +21,8 @@ import com.google.android.gms.wearable.Wearable;
 public class MainActivity extends Activity
         implements View.OnClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        DataApi.DataListener {
 
     private static final String TAG = "MainActivity";
     private static final String COUNT_KEY_PATH = "/count";
@@ -63,7 +66,10 @@ public class MainActivity extends Activity
 
     @Override
     protected void onStop() {
-        mGoogleApiClient.disconnect();
+        if (null != mGoogleApiClient && mGoogleApiClient.isConnected()) {
+            Wearable.DataApi.removeListener(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
         super.onStop();
     }
 
@@ -84,6 +90,7 @@ public class MainActivity extends Activity
     public void onConnected(Bundle connectionHint) {
         Log.d(TAG, "onConnected");
         // Now you can use the Data Layer API
+        Wearable.DataApi.addListener(mGoogleApiClient, this);
     }
 
     @Override
@@ -102,5 +109,16 @@ public class MainActivity extends Activity
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult =
                 Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
+    }
+
+    @Override
+    public void onDataChanged(DataEventBuffer dataEventBuffer) {
+        for (DataEvent event : dataEventBuffer) {
+            if (event.getType() == DataEvent.TYPE_DELETED) {
+                Log.d(TAG, "DataItem deleted: " + event.getDataItem().getUri());
+            } else if (event.getType() == DataEvent.TYPE_CHANGED) {
+                Log.d(TAG, "DataItem changed: " + event.getDataItem().getUri());
+            }
+        }
     }
 }
