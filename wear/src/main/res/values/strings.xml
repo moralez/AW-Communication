@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">AW Communication</string>
 
-    <string name="send_message_device">Send Message To Device</string>
+    <string name="send_count_device">Send Count To Device</string>
 
     <string name="status">Current Status:</string>
+    <string name="standby">STANDING BY</string>
     <string name="sending">SENDING</string>
+    <string name="received">RECEIVED</string>
 </resources>

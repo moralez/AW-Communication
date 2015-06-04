@@ -3,9 +3,11 @@
 
     <string name="action_settings">Settings</string>
 
-    <string name="send_message_wear">Send Message To Wear</string>
+    <string name="send_message_wear">Send Count To Wear</string>
 
     <string name="status">Current Status:</string>
+    <string name="standby">STANDING BY</string>
     <string name="sending">SENDING</string>
+    <string name="received">RECEIVED</string>
 
 </resources>

@@ -1,6 +1,7 @@
 package brg.awcommunication;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,6 +17,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Button sendMessageBtn;
     private TextView status;
 
+    private static final String COUNT_KEY = "com.example.key.count";
+    private int count = 0;
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent.hasExtra(COUNT_KEY)) {
+            count = intent.getIntExtra(COUNT_KEY, -1);
+            status.setText(getString(R.string.received) + " " + count);
+        } else {
+            status.setText(getString(R.string.standby));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +40,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         sendMessageBtn.setOnClickListener(this);
 
         status = (TextView)findViewById(R.id.status);
+
+        if (getIntent().hasExtra(COUNT_KEY)) {
+            status.setText(getString(R.string.received) + " " + getIntent().getIntExtra(COUNT_KEY, -1));
+        } else {
+            status.setText(getString(R.string.standby));
+        }
     }
 
     @Override
@@ -57,7 +78,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void sendMessage() {
-        Log.i(TAG, "Sending message to wearable");
+        Log.i(TAG, "Sending picture to wearable");
         status.setText(getString(R.string.sending));
     }
 }

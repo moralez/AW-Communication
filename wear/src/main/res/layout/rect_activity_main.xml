@@ -4,24 +4,33 @@
     android:layout_height="match_parent" android:orientation="vertical"
     tools:context=".MainActivity" tools:deviceIds="wear_square">
 
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/impossibru"/>
+
     <TextView
         android:id="@+id/status_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/status"/>
+        android:text="@string/status"
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/status_label"
-        android:layout_toRightOf="@id/status_label"/>
+        android:layout_toRightOf="@id/status_label"
+        android:text="@string/standby"
+        android:textStyle="bold"/>
 
     <Button
         android:id="@+id/send_message_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/send_message_device"
+        android:text="@string/send_count_device"
         android:layout_below="@id/status"/>
 
 </RelativeLayout>

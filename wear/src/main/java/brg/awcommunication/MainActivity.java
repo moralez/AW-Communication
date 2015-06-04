@@ -81,8 +81,8 @@ public class MainActivity extends Activity
     }
 
     private void sendMessage() {
-        Log.i(TAG, "Sending message to device");
-        status.setText(getString(R.string.sending));
+        Log.i(TAG, "Sending count to device");
+        status.setText(getString(R.string.sending) + " " + count);
         increaseCounter();
     }
 
