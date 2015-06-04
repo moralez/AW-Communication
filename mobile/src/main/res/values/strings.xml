@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">AW Communication</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="send_message_wear">Send Message To Wear</string>
+
+    <string name="status">Current Status:</string>
+    <string name="sending">SENDING</string>
+
 </resources>

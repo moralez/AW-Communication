@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">AW Communication</string>
-    <string name="hello_round">Hello Round World!</string>
-    <string name="hello_square">Hello Square World!</string>
+
+    <string name="send_message_device">Send Message To Device</string>
+
+    <string name="status">Current Status:</string>
+    <string name="sending">SENDING</string>
 </resources>
