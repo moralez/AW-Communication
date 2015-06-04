@@ -10,6 +10,10 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 public class MainActivity extends Activity
@@ -18,11 +22,14 @@ public class MainActivity extends Activity
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MainActivity";
+    private static final String COUNT_KEY_PATH = "/count";
+    private static final String COUNT_KEY = "com.example.key.count";
 
     private Button sendMessageBtn;
     private TextView status;
 
     private GoogleApiClient mGoogleApiClient;
+    private int count = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +77,7 @@ public class MainActivity extends Activity
     private void sendMessage() {
         Log.i(TAG, "Sending message to device");
         status.setText(getString(R.string.sending));
+        increaseCounter();
     }
 
     @Override
@@ -86,5 +94,13 @@ public class MainActivity extends Activity
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed: " + connectionResult);
+    }
+
+    private void increaseCounter() {
+        PutDataMapRequest putDataMapReq = PutDataMapRequest.create(COUNT_KEY_PATH);
+        putDataMapReq.getDataMap().putInt(COUNT_KEY, count++);
+        PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult =
+                Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
     }
 }
