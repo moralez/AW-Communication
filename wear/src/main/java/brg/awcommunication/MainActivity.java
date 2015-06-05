@@ -1,22 +1,33 @@
 package brg.awcommunication;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
+
+import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity
         implements View.OnClickListener,
@@ -27,9 +38,12 @@ public class MainActivity extends Activity
     private static final String TAG = "MainActivity";
     private static final String COUNT_KEY_PATH = "/count";
     private static final String COUNT_KEY = "com.example.key.count";
+    private static final String IMAGE_KEY_PATH = "/image";
+    private static final String IMAGE_KEY = "com.example.key.image";
 
     private Button sendMessageBtn;
     private TextView status;
+    private ImageView image;
 
     private GoogleApiClient mGoogleApiClient;
     private int count = 0;
@@ -46,6 +60,8 @@ public class MainActivity extends Activity
                 sendMessageBtn.setOnClickListener(MainActivity.this);
 
                 status = (TextView)stub.findViewById(R.id.status);
+
+                image = (ImageView)stub.findViewById(R.id.image_view);
             }
         });
 
@@ -105,10 +121,20 @@ public class MainActivity extends Activity
 
     private void increaseCounter() {
         PutDataMapRequest putDataMapReq = PutDataMapRequest.create(COUNT_KEY_PATH);
-        putDataMapReq.getDataMap().putInt(COUNT_KEY, count++);
+        putDataMapReq.getDataMap().putInt(COUNT_KEY, ++count);
         PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
         PendingResult<DataApi.DataItemResult> pendingResult =
                 Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
+        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(final DataApi.DataItemResult result) {
+                if(result.getStatus().isSuccess()) {
+                    Log.i(TAG, "Data item set: " + result.getDataItem().getUri());
+                } else {
+                    Log.i(TAG, "Failed to set data item");
+                }
+            }
+        });
     }
 
     @Override
@@ -118,7 +144,50 @@ public class MainActivity extends Activity
                 Log.d(TAG, "DataItem deleted: " + event.getDataItem().getUri());
             } else if (event.getType() == DataEvent.TYPE_CHANGED) {
                 Log.d(TAG, "DataItem changed: " + event.getDataItem().getUri());
+
+                Uri uri = event.getDataItem().getUri();
+                final DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
+                if (dataMapItem.getDataMap().containsKey(IMAGE_KEY)) {
+                    Asset imageAsset = dataMapItem.getDataMap().getAsset(IMAGE_KEY);
+                    final Bitmap bitmap = loadBitmapFromAsset(imageAsset);
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            image.setImageBitmap(bitmap);
+                        }
+                    });
+                }
+
+                if (dataMapItem.getDataMap().containsKey(COUNT_KEY)) {
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            count = dataMapItem.getDataMap().getInt(COUNT_KEY);
+                            status.setText(getString(R.string.received) + " " + dataMapItem.getDataMap().getInt(COUNT_KEY));
+                        }
+                    });
+                }
             }
         }
+    }
+
+    public Bitmap loadBitmapFromAsset(Asset asset) {
+        if (asset == null) {
+            throw new IllegalArgumentException("Asset must be non-null");
+        }
+        ConnectionResult result =
+                mGoogleApiClient.blockingConnect(30, TimeUnit.MILLISECONDS);
+        if (!result.isSuccess()) {
+            return null;
+        }
+        // convert asset into a file descriptor and block until it's ready
+        InputStream assetInputStream = Wearable.DataApi.getFdForAsset(
+                mGoogleApiClient, asset).await().getInputStream();
+        mGoogleApiClient.disconnect();
+
+        if (assetInputStream == null) {
+            Log.w(TAG, "Requested an unknown Asset.");
+            return null;
+        }
+        // decode the stream into a bitmap
+        return BitmapFactory.decodeStream(assetInputStream);
     }
 }
